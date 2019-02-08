@@ -1,0 +1,21 @@
+server:
+  port: 0
+
+togglz:
+  console:
+    enabled: true
+    secured: false
+    useManagementPort: false
+
+management:
+  metrics:
+    web:
+      server:
+        auto-time-reqest: true
+    endpoint:
+      health:
+        show-details: always
+    endpoints:
+      web:
+        exposure:
+          include: auditevents,beans,configprops,health,httptrace,info,loggers,metrics,mappings,sessions,threaddump,heapdump
