@@ -15,83 +15,86 @@ import org.togglz.core.repository.FeatureState;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class MainTest {
+class MainTest {
     private static ConfigurableApplicationContext context;
-    private static String serverPort;
     private static String baseUrl;
     private static String EXPRESSION = "3+4";
+
     private FeatureState initialFeatureState;
 
     @BeforeAll
-    public static void initSpring() {
+    static void initSpring() {
         context = SpringApplication.run(Main.class);
-        serverPort = context.getEnvironment().getProperty("local.server.port");
+        String serverPort = context.getEnvironment().getProperty("local.server.port");
         baseUrl = String.format("http://localhost:%s/", serverPort);
     }
 
     @BeforeEach
-    public void storeCurrentFeatureToggleState() {
+    void storeCurrentFeatureToggleState() {
         FeatureManager manager = context.getBean(FeatureManager.class);
         initialFeatureState = manager.getFeatureState(FeatureToggles.Translation);
     }
 
     @AfterEach
-    public void restoreFeatureToggleState() {
+    void restoreFeatureToggleState() {
         FeatureManager manager = context.getBean(FeatureManager.class);
         manager.setFeatureState(initialFeatureState);
     }
 
     @Test
-    public void togglzConsoleExists() throws NoSuchFieldException {
-        String featureToggleLabel = FeatureToggles.class.getField(FeatureToggles.Translation.name()).getAnnotation(Label.class).value();
-        RestTemplate template = getRestTemplate();
-        String url = baseUrl + "togglz-console/index";
-        ResponseEntity<String> response = template.getForEntity(url, String.class);
+    void togglzConsoleExists() throws NoSuchFieldException {
+        String url = baseUrl + "togglz-console";
+        ResponseEntity<String> response = getRestTemplate().getForEntity(url, String.class);
         assertEquals(HttpStatus.OK, response.getStatusCode(), "Cannot hit togglz console at: " + url);
+
+        String featureToggleLabel = FeatureToggles.class.getField(FeatureToggles.Translation.name()).getAnnotation(Label.class).value();
         assertTrue(response.getBody().contains(featureToggleLabel));
     }
 
     @Test
-    public void rejectsTranslationRequestWhenMissingAuthorizationToken() {
+    void rejectsTranslationRequestWhenMissingAuthorizationToken() {
         try {
             getTranslationResultResponseEntity(new HttpHeaders());
+            fail("Should have throw an exception");
         } catch (HttpClientErrorException exception) {
             assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
         }
     }
 
     @Test
-    public void performsTranslationWhenEnabled() {
-        setTranslationsEnableTo(true);
-        ResponseEntity<TranslationResult> entity = performTranslation();
-        assertNotEquals(entity.getBody().original, entity.getBody().translated);
+    void performsTranslationWhenEnabled() {
+        setTranslationsEnabledTo(true);
+        TranslationResult result = performTranslation();
+        assertNotEquals(result.original, result.translated);
     }
 
     @Test
-    public void doesNotTranslateWhenDisabled() {
-        setTranslationsEnableTo(false);
-        ResponseEntity<TranslationResult> entity = performTranslation();
-        assertEquals(entity.getBody().original, entity.getBody().translated);
+    void doesNotTranslateWhenDisabled() {
+        setTranslationsEnabledTo(false);
+        TranslationResult result = performTranslation();
+        assertEquals(result.original, result.translated);
     }
 
-    private ResponseEntity<TranslationResult> performTranslation() {
+    private TranslationResult performTranslation() {
         HttpHeaders headers = new HttpHeaders();
         headers.set("authorization", "token");
         return getTranslationResultResponseEntity(headers);
     }
 
-    private ResponseEntity<TranslationResult> getTranslationResultResponseEntity(HttpHeaders headers) {
+    private TranslationResult getTranslationResultResponseEntity(HttpHeaders headers) {
         String url = baseUrl + "translate/" + EXPRESSION;
         RestTemplate template = getRestTemplate();
 
-        return template.exchange(url, HttpMethod.GET, new HttpEntity(headers), TranslationResult.class);
+        ResponseEntity<TranslationResult> exchange = template.exchange(url, HttpMethod.GET, new HttpEntity(headers), TranslationResult.class);
+        assertEquals(HttpStatus.OK, exchange.getStatusCode());
+        return exchange.getBody();
     }
 
     private RestTemplate getRestTemplate() {
         return context.getBean(RestTemplate.class);
     }
 
-    private void setTranslationsEnableTo(boolean status) {
+    private void setTranslationsEnabledTo(boolean status) {
         FeatureManager manager = context.getBean(FeatureManager.class);
         manager.setFeatureState(new FeatureState(FeatureToggles.Translation, status));
     }
