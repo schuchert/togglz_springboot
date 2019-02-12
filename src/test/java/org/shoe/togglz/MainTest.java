@@ -1,6 +1,8 @@
 package org.shoe.togglz;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -18,12 +20,25 @@ public class MainTest {
     private static String serverPort;
     private static String baseUrl;
     private static String EXPRESSION = "3+4";
+    private FeatureState initialFeatureState;
 
     @BeforeAll
     public static void initSpring() {
         context = SpringApplication.run(Main.class);
         serverPort = context.getEnvironment().getProperty("local.server.port");
         baseUrl = String.format("http://localhost:%s/", serverPort);
+    }
+
+    @BeforeEach
+    public void storeCurrentFeatureToggleState() {
+        FeatureManager manager = context.getBean(FeatureManager.class);
+        initialFeatureState = manager.getFeatureState(FeatureToggles.Translation);
+    }
+
+    @AfterEach
+    public void restoreFeatureToggleState() {
+        FeatureManager manager = context.getBean(FeatureManager.class);
+        manager.setFeatureState(initialFeatureState);
     }
 
     @Test
