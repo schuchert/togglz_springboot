@@ -4,9 +4,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.togglz.core.annotation.Label;
 import org.togglz.core.manager.FeatureManager;
 import org.togglz.core.repository.FeatureState;
 
@@ -20,23 +21,28 @@ public class MainTest {
 
     @BeforeAll
     public static void initSpring() {
-        context = SpringApplication.run(Main.class, new String[]{});
+        context = SpringApplication.run(Main.class);
         serverPort = context.getEnvironment().getProperty("local.server.port");
         baseUrl = String.format("http://localhost:%s/", serverPort);
     }
 
     @Test
-    public void appHasAGreeting() {
-        Main classUnderTest = new Main();
-        assertNotNull("app should have a greeting", classUnderTest.getGreeting());
-    }
-
-    @Test
-    public void togglzConsoleExists() {
+    public void togglzConsoleExists() throws NoSuchFieldException {
+        String featureToggleLabel = FeatureToggles.class.getField(FeatureToggles.Translation.name()).getAnnotation(Label.class).value();
         RestTemplate template = getRestTemplate();
         String url = baseUrl + "togglz-console/index";
         ResponseEntity<String> response = template.getForEntity(url, String.class);
         assertEquals(HttpStatus.OK, response.getStatusCode(), "Cannot hit togglz console at: " + url);
+        assertTrue(response.getBody().contains(featureToggleLabel));
+    }
+
+    @Test
+    public void rejectsTranslationRequestWhenMissingAuthorizationToken() {
+        try {
+            getTranslationResultResponseEntity(new HttpHeaders());
+        } catch (HttpClientErrorException exception) {
+            assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
+        }
     }
 
     @Test
@@ -54,9 +60,16 @@ public class MainTest {
     }
 
     private ResponseEntity<TranslationResult> performTranslation() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("authorization", "token");
+        return getTranslationResultResponseEntity(headers);
+    }
+
+    private ResponseEntity<TranslationResult> getTranslationResultResponseEntity(HttpHeaders headers) {
         String url = baseUrl + "translate/" + EXPRESSION;
         RestTemplate template = getRestTemplate();
-        return template.getForEntity(url, TranslationResult.class);
+
+        return template.exchange(url, HttpMethod.GET, new HttpEntity(headers), TranslationResult.class);
     }
 
     private RestTemplate getRestTemplate() {

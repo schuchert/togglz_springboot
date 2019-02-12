@@ -21,10 +21,12 @@ dependencies {
     compile group: 'org.springframework.boot', name: 'spring-boot-starter', version: '2.1.2.RELEASE'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '2.1.2.RELEASE'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.2.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.1.2.RELEASE'
     compile("org.togglz:togglz-spring-boot-starter:2.6.1.Final")
     compile("org.togglz:togglz-console:2.6.1.Final")
     compile("org.togglz:togglz-servlet:2.6.1.Final")
     compile("org.togglz:togglz-spring-web:2.6.1.Final")
+    compile("org.togglz:togglz-spring-security:2.6.1.Final")
 
     testCompile('org.junit.jupiter:junit-jupiter-api:5.3.2')
     testCompile('org.junit.jupiter:junit-jupiter-params:5.3.2')
