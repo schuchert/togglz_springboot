@@ -8,8 +8,4 @@ public class Main {
     public static void main(String[] args) {
         SpringApplication.run(Main.class, args);
     }
-
-    public String getGreeting() {
-        return "Hello world.";
-    }
 }
