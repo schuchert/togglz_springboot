@@ -14,9 +14,9 @@ Here's a quick summary of points of interest:
     compile("org.togglz:togglz-spring-security:2.6.1.Final")
 ```
 
-* Create an enumeration with your toggles (see [FeatureTogglz.java](https://github.com/schuchert/togglz_springboot/blob/master/src/main/java/org/shoe/togglz/FeatureToggles.java)
+* Create an enumeration with your toggles: [FeatureTogglz.java](https://github.com/schuchert/togglz_springboot/blob/master/src/main/java/org/shoe/togglz/FeatureToggles.java)
 
-* Make sure the FeatureToggle class is registered in spring (see [Spring Configuration]()https://github.com/schuchert/togglz_springboot/blob/master/src/main/java/org/shoe/togglz/SystemConfiguration.java)
+* Make sure the FeatureToggle class is registered in spring:  [Spring Configuration](https://github.com/schuchert/togglz_springboot/blob/master/src/main/java/org/shoe/togglz/SystemConfiguration.java)
 ```
     @Bean
     public FeatureProvider featureProvider() {
@@ -24,7 +24,7 @@ Here's a quick summary of points of interest:
     }
 ```
 
-* Enable the togglz console (See [application-local.yml](https://github.com/schuchert/togglz_springboot/blob/master/src/main/resources/application-local.yml)
+* Enable the togglz console: [application-local.yml](https://github.com/schuchert/togglz_springboot/blob/master/src/main/resources/application-local.yml)
 ```
 togglz:
   console:
