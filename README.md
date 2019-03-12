@@ -15,6 +15,13 @@ Here's a quick summary of points of interest:
 ```
 
 * Create an enumeration with your toggles: [FeatureTogglz.java](https://github.com/schuchert/togglz_springboot/blob/master/src/main/java/org/shoe/togglz/FeatureToggles.java)
+```
+public enum FeatureToggles implements Feature {
+    @EnabledByDefault
+    @Label("Perform Translation")
+    Translation
+}
+```
 
 * Make sure the FeatureToggle class is registered in spring:  [Spring Configuration](https://github.com/schuchert/togglz_springboot/blob/master/src/main/java/org/shoe/togglz/SystemConfiguration.java)
 ```
@@ -31,6 +38,11 @@ togglz:
     enabled: true
     secured: false
     useManagementPort: false
+```
+
+* This is using the standard spring configuration mechanism by setting an active profile in [application.properties](https://github.com/schuchert/togglz_springboot/blob/master/src/main/resources/application.properties)
+```
+spring.profiles.active=local
 ```
 
 ## Context
